@@ -14,7 +14,8 @@
     "password_lost_sent_title": "發送密碼重置郵件",
     "password_lost_sent_message": "一封電子郵件已經發送到<strong>{{username}}</ strong>以重置您的密碼",
     "password_lost_error_title": "密碼重置錯誤",
-    "password_lost_error_message": "無法發送密碼重置電子郵件，請聯繫您的管理員進行手動重置"
+    "password_lost_error_message": "無法發送密碼重置電子郵件，請聯繫您的管理員進行手動重置",
+    "register_request": "註冊請求"
   },
   "passwordlost": {
     "title": "密碼丟失",

@@ -2,6 +2,7 @@
   "login": {
     "username": "用户名",
     "password": "密码",
+    "email": "邮箱",
     "validation_code_required": "请输入验证码",
     "validation_code_title": "您的帐号已经激活了双身份验证. 请输入您配置手机app的提供的验证码.",
     "validation_code": "验证码",
@@ -14,7 +15,8 @@
     "password_lost_sent_title": "密码重置邮件已发送",
     "password_lost_sent_message": "重置密码的邮件已经发送至<strong>{{ username }}</strong>",
     "password_lost_error_title": "密码重置出错",
-    "password_lost_error_message": "无法发送密码重置邮件，请联系您的管理员进行手动重置"
+    "password_lost_error_message": "无法发送密码重置邮件，请联系您的管理员进行手动重置",
+    "register_request": "申请注册"
   },
   "passwordlost": {
     "title": "丢失密码",
@@ -232,7 +234,11 @@
     "default": {
       "title": "用户 & 群组",
       "message": "此处您可以浏览用户和群组信息."
-    }
+    },
+    "pending_requests": "待处理请求",
+    "action": "操作",
+    "approve": "批准",
+    "reject": "拒绝"
   },
   "settings": {
     "menu_personal_settings": "个人设置",

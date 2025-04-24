@@ -143,6 +143,16 @@
         <directory>src/main/resources</directory>
       </resource>
     </resources>
+      <plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <configuration>
+                  <source>16</source>
+                  <target>16</target>
+              </configuration>
+          </plugin>
+      </plugins>
   </build>
 
   <profiles>
@@ -268,8 +278,10 @@
               <webXml>src/main/webapp/WEB-INF/web.xml</webXml>
             </configuration>
           </plugin>
+
         </plugins>
       </build>
+
     </profile>
   </profiles>
 </project>

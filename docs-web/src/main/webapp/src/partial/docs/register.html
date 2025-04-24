@@ -1,0 +1,43 @@
+<div class="modal-header">
+    <h3 class="modal-title">用户注册</h3>
+</div>
+
+<div class="modal-body">
+    <form name="registerForm" ng-submit="submitRegister()" novalidate>
+        <!-- 用户名输入框 -->
+        <div class="form-group" ng-class="{'has-error': registerForm.username.$touched && registerForm.username.$invalid}">
+            <label for="username">用户名</label>
+            <input type="text" id="username" class="form-control" ng-model="registerData.username" name="username" required>
+            <div ng-show="registerForm.username.$touched && registerForm.username.$invalid" class="text-danger">
+                <span ng-show="registerForm.username.$error.required">用户名不能为空</span>
+            </div>
+        </div>
+
+        <!-- 密码输入框 -->
+        <div class="form-group" ng-class="{'has-error': registerForm.password.$touched && registerForm.password.$invalid}">
+            <label for="password">密码</label>
+            <input type="password" id="password" class="form-control" ng-model="registerData.password" name="password" required>
+            <div ng-show="registerForm.password.$touched && registerForm.password.$invalid" class="text-danger">
+                <span ng-show="registerForm.password.$error.required">密码不能为空</span>
+            </div>
+        </div>
+
+        <!-- 邮箱输入框 -->
+        <div class="form-group" ng-class="{'has-error': registerForm.email.$touched && registerForm.email.$invalid}">
+            <label for="email">邮箱</label>
+            <input type="email" id="email" class="form-control" ng-model="registerData.email" name="email" required>
+            <div ng-show="registerForm.email.$touched && registerForm.email.$invalid" class="text-danger">
+                <span ng-show="registerForm.email.$error.required">邮箱不能为空</span>
+                <span ng-show="registerForm.email.$error.email">邮箱格式不正确</span>
+            </div>
+        </div>
+
+        <!-- 按钮区域 -->
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-primary" ng-disabled="registerForm.$invalid">提交</button>
+            <button type="button" class="btn btn-secondary" ng-click="cancel()">取消</button>
+        </div>
+    </form>
+</div>
+
+<p class="text-info text-center mt-2">提交注册后，管理员审批通过才会创建账户。</p>

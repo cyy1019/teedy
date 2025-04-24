@@ -1,30 +1,3 @@
-<style>
-  /* No navbar in login screen */
-  .navbar {
-    display: none;
-  }
-
-  /* Absolute positionned footer on top of the login background */
-  .footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    border: none;
-  }
-
-  @media screen and (min-width: 768px) {
-    .footer {
-      width: 50%;
-    }
-  }
-
-  /* Smaller links everywhere on login */
-  a {
-    font-size: 90%;
-    color: #666;
-  }
-</style>
 <div class="row vertical-center">
   <div class="col-sm-6 col-xs-12 login-box">
     <div class="row">
@@ -79,6 +52,13 @@
           <button type="submit" class="btn btn-default btn-block" ng-if="app.guest_login" ng-click="loginAsGuest()">
             <span class="fas fa-user"></span> {{ 'login.login_as_guest' | translate }}
           </button>
+
+          <!-- 注册按钮 -->
+          <div class="text-center">
+            <button type="button" class="btn btn-primary" ng-click="openRegisterModal()" style="background: pink;">
+              {{ 'login.register_request' | translate }}
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -86,3 +66,5 @@
 
   <div class="login-img-container col-sm-6 hidden-xs"></div>
 </div>
+
+<!--// TODO:要改文字？？？-->

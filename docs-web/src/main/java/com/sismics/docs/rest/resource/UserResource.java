@@ -32,6 +32,7 @@ import com.sismics.util.totp.GoogleAuthenticator;
 import com.sismics.util.totp.GoogleAuthenticatorKey;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.servlet.http.Cookie;
 import jakarta.ws.rs.*;
@@ -40,6 +41,7 @@ import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.StringReader;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -76,37 +78,95 @@ public class UserResource extends BaseResource {
      * @return Response
      */
     @PUT
+    @Path("/register")
     public Response register(
         @FormParam("username") String username,
         @FormParam("password") String password,
         @FormParam("email") String email,
         @FormParam("storage_quota") String storageQuotaStr) {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        checkBaseFunction(BaseFunction.ADMIN);
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+//        checkBaseFunction(BaseFunction.ADMIN);
         
         // Validate the input data
         username = ValidationUtil.validateLength(username, "username", 3, 50);
         ValidationUtil.validateUsername(username, "username");
-        password = ValidationUtil.validateLength(password, "password", 8, 50);
+        password = ValidationUtil.validateLength(password, "password", 0, 50);
         email = ValidationUtil.validateLength(email, "email", 1, 100);
         Long storageQuota = ValidationUtil.validateLong(storageQuotaStr, "storage_quota");
         ValidationUtil.validateEmail(email, "email");
+
+        // create user register request
+        UserRequest request = new UserRequest();
+        request.setUserId(null); // 初始为空
+        request.setType("REGISTER");
+        request.setData(Json.createObjectBuilder()
+                .add("username", username)
+                .add("password", password)
+                .add("email", email)
+                .add("storageQuota", storageQuota)
+                .build().toString());
+        request.setCreateDate(new Date());
+        // save the request
+        UserRequestDao userRequestDao = new UserRequestDao();
+        String requestId = userRequestDao.create(request);
+
+        return Response.ok(Json.createObjectBuilder()
+                .add("status", "request_submitted")
+                .add("requestId", requestId)
+                .build()).build();
         
-        // Create the user
+//        // Create the user
+//        User user = new User();
+//        user.setRoleId(Constants.DEFAULT_USER_ROLE);
+//        user.setUsername(username);
+//        user.setPassword(password);
+//        user.setEmail(email);
+//        user.setStorageQuota(storageQuota);
+//        user.setOnboarding(true);
+//
+//        // Create the user
+//        UserDao userDao = new UserDao();
+//        try {
+//            userDao.create(user, principal.getId());
+//        } catch (Exception e) {
+//            if ("AlreadyExistingUsername".equals(e.getMessage())) {
+//                throw new ClientException("AlreadyExistingUsername", "Login already used", e);
+//            } else {
+//                throw new ServerException("UnknownError", "Unknown server error", e);
+//            }
+//        }
+//
+//        // Always return OK
+//        JsonObjectBuilder response = Json.createObjectBuilder()
+//                .add("status", "ok");
+//        return Response.ok().entity(response.build()).build();
+    }
+
+    @POST
+    @Path("/register/{id}/accept")
+    public Response acceptRegisterRequest(@PathParam("id") String requestId) {
+        UserRequestDao requestDao = new UserRequestDao();
+        UserRequest request = requestDao.getById(requestId);
+        if (request == null || !"REGISTER".equals(request.getType())) {
+            throw new ClientException("RequestNotFound", "Register request not found");
+        }
+        checkBaseFunction(BaseFunction.ADMIN);
+
+        // 解析数据
+        JsonObject data = Json.createReader(new StringReader(request.getData())).readObject();
+
         User user = new User();
         user.setRoleId(Constants.DEFAULT_USER_ROLE);
-        user.setUsername(username);
-        user.setPassword(password);
-        user.setEmail(email);
-        user.setStorageQuota(storageQuota);
+        user.setUsername(data.getString("username"));
+        user.setPassword(data.getString("password"));
+        user.setEmail(data.getString("email"));
+        user.setStorageQuota(data.getJsonNumber("storageQuota").longValue());
         user.setOnboarding(true);
 
-        // Create the user
-        UserDao userDao = new UserDao();
         try {
-            userDao.create(user, principal.getId());
+            new UserDao().create(user, principal.getId());
         } catch (Exception e) {
             if ("AlreadyExistingUsername".equals(e.getMessage())) {
                 throw new ClientException("AlreadyExistingUsername", "Login already used", e);
@@ -114,12 +174,52 @@ public class UserResource extends BaseResource {
                 throw new ServerException("UnknownError", "Unknown server error", e);
             }
         }
-        
-        // Always return OK
-        JsonObjectBuilder response = Json.createObjectBuilder()
-                .add("status", "ok");
-        return Response.ok().entity(response.build()).build();
+        requestDao.delete(requestId);
+
+        return Response.ok(Json.createObjectBuilder()
+                .add("status", "register_accepted")
+                .build()).build();
     }
+
+    @GET
+    @Path("/register")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listRegisterRequests() {
+        if (!authenticate()) {
+            throw new ForbiddenClientException();
+        }
+        checkBaseFunction(BaseFunction.ADMIN);
+
+        UserRequestDao requestDao = new UserRequestDao();
+        List<UserRequest> allRequests = requestDao.getByUserId(null);
+
+        List<UserRequest> registerRequests = allRequests.stream()
+                .filter(req -> "REGISTER".equals(req.getType()))
+                .toList();
+
+        return Response.ok(registerRequests).build();
+    }
+
+    @POST
+    @Path("/register/{id}/reject")
+    public Response rejectRegisterRequest(@PathParam("id") String requestId) {
+        if (!authenticate()) {
+            throw new ForbiddenClientException();
+        }
+        checkBaseFunction(BaseFunction.ADMIN);
+
+        UserRequestDao requestDao = new UserRequestDao();
+        UserRequest request = requestDao.getById(requestId);
+        if (request == null || !"REGISTER".equals(request.getType())) {
+            throw new ClientException("RequestNotFound", "Register request not found");
+        }
+        requestDao.delete(requestId); // 直接删除请求
+        return Response.ok(Json.createObjectBuilder()
+                .add("status", "register_rejected")
+                .build()).build();
+    }
+
+
 
     /**
      * Updates the current user informations.
