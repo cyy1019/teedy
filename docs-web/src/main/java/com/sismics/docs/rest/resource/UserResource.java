@@ -10,6 +10,7 @@ import com.sismics.docs.core.dao.criteria.GroupCriteria;
 import com.sismics.docs.core.dao.criteria.UserCriteria;
 import com.sismics.docs.core.dao.dto.GroupDto;
 import com.sismics.docs.core.dao.dto.UserDto;
+import com.sismics.docs.core.dao.dto.UserRequestDto;
 import com.sismics.docs.core.event.DocumentDeletedAsyncEvent;
 import com.sismics.docs.core.event.FileDeletedAsyncEvent;
 import com.sismics.docs.core.event.PasswordLostEvent;
@@ -45,6 +46,8 @@ import java.io.StringReader;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.UUID;
 
 /**
  * User REST resources.
@@ -80,90 +83,58 @@ public class UserResource extends BaseResource {
     @PUT
     @Path("/register")
     public Response register(
-        @FormParam("username") String username,
-        @FormParam("password") String password,
-        @FormParam("email") String email,
-        @FormParam("storage_quota") String storageQuotaStr) {
-//        if (!authenticate()) {
-//            throw new ForbiddenClientException();
-//        }
-//        checkBaseFunction(BaseFunction.ADMIN);
-        
+            @FormParam("username") String username,
+            @FormParam("password") String password,
+            @FormParam("email") String email,
+            @FormParam("storage_quota") String storageQuotaStr) {
+
         // Validate the input data
         username = ValidationUtil.validateLength(username, "username", 3, 50);
         ValidationUtil.validateUsername(username, "username");
         password = ValidationUtil.validateLength(password, "password", 0, 50);
         email = ValidationUtil.validateLength(email, "email", 1, 100);
-        Long storageQuota = ValidationUtil.validateLong(storageQuotaStr, "storage_quota");
         ValidationUtil.validateEmail(email, "email");
 
-        // create user register request
+        // Create user register request
         UserRequest request = new UserRequest();
-        request.setUserId(null); // 初始为空
+        request.setId(UUID.randomUUID().toString());
         request.setType("REGISTER");
-        request.setData(Json.createObjectBuilder()
-                .add("username", username)
-                .add("password", password)
-                .add("email", email)
-                .add("storageQuota", storageQuota)
-                .build().toString());
+        request.setUserName(username);
+        request.setPassword(password);
+        request.setEmail(email);
         request.setCreateDate(new Date());
-        // save the request
+
+        // Save the request
         UserRequestDao userRequestDao = new UserRequestDao();
         String requestId = userRequestDao.create(request);
 
+        // Return response with status and request ID
         return Response.ok(Json.createObjectBuilder()
                 .add("status", "request_submitted")
                 .add("requestId", requestId)
                 .build()).build();
-        
-//        // Create the user
-//        User user = new User();
-//        user.setRoleId(Constants.DEFAULT_USER_ROLE);
-//        user.setUsername(username);
-//        user.setPassword(password);
-//        user.setEmail(email);
-//        user.setStorageQuota(storageQuota);
-//        user.setOnboarding(true);
-//
-//        // Create the user
-//        UserDao userDao = new UserDao();
-//        try {
-//            userDao.create(user, principal.getId());
-//        } catch (Exception e) {
-//            if ("AlreadyExistingUsername".equals(e.getMessage())) {
-//                throw new ClientException("AlreadyExistingUsername", "Login already used", e);
-//            } else {
-//                throw new ServerException("UnknownError", "Unknown server error", e);
-//            }
-//        }
-//
-//        // Always return OK
-//        JsonObjectBuilder response = Json.createObjectBuilder()
-//                .add("status", "ok");
-//        return Response.ok().entity(response.build()).build();
     }
 
     @POST
     @Path("/register/{id}/accept")
     public Response acceptRegisterRequest(@PathParam("id") String requestId) {
+        if (!authenticate()) {
+            throw new ForbiddenClientException();
+        }
+        checkBaseFunction(BaseFunction.ADMIN); // 权限检查
         UserRequestDao requestDao = new UserRequestDao();
-        UserRequest request = requestDao.getById(requestId);
+        UserRequest request = requestDao.findById(requestId); // 使用 findById 方法查找请求
         if (request == null || !"REGISTER".equals(request.getType())) {
             throw new ClientException("RequestNotFound", "Register request not found");
         }
-        checkBaseFunction(BaseFunction.ADMIN);
-
-        // 解析数据
-        JsonObject data = Json.createReader(new StringReader(request.getData())).readObject();
-
+        // 创建新的 User 实体
         User user = new User();
         user.setRoleId(Constants.DEFAULT_USER_ROLE);
-        user.setUsername(data.getString("username"));
-        user.setPassword(data.getString("password"));
-        user.setEmail(data.getString("email"));
-        user.setStorageQuota(data.getJsonNumber("storageQuota").longValue());
-        user.setOnboarding(true);
+        user.setUsername(request.getUserName());
+        user.setPassword(request.getPassword());
+        user.setEmail(request.getEmail());
+        user.setStorageQuota(0L); // 你可以根据实际情况调整默认存储配额
+        user.setOnboarding(true); // 假设新用户默认为正在入驻
 
         try {
             new UserDao().create(user, principal.getId());
@@ -174,12 +145,13 @@ public class UserResource extends BaseResource {
                 throw new ServerException("UnknownError", "Unknown server error", e);
             }
         }
-        requestDao.delete(requestId);
+        requestDao.deleteById(requestId);
 
         return Response.ok(Json.createObjectBuilder()
                 .add("status", "register_accepted")
                 .build()).build();
     }
+
 
     @GET
     @Path("/register")
@@ -188,16 +160,25 @@ public class UserResource extends BaseResource {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
-        checkBaseFunction(BaseFunction.ADMIN);
+        checkBaseFunction(BaseFunction.ADMIN); // 权限检查
 
         UserRequestDao requestDao = new UserRequestDao();
-        List<UserRequest> allRequests = requestDao.getByUserId(null);
+        List<UserRequestDto> allRequests = requestDao.findAll(); // 获取所有注册请求
 
-        List<UserRequest> registerRequests = allRequests.stream()
-                .filter(req -> "REGISTER".equals(req.getType()))
-                .toList();
+        // 构建JSON响应
+        JsonArrayBuilder requests = Json.createArrayBuilder();
+        for (UserRequestDto request : allRequests) {
+            requests.add(Json.createObjectBuilder()
+                    .add("id", request.getId())
+                    .add("username", request.getUserName())
+                    .add("type", request.getType())
+                    .add("email", request.getEmail())
+                    .add("create_date", request.getCreateDate() != null ? request.getCreateDate().getTime() : 0));
+        }
 
-        return Response.ok(registerRequests).build();
+        JsonObjectBuilder response = Json.createObjectBuilder()
+                .add("requests", requests);
+        return Response.ok().entity(response.build()).build();
     }
 
     @POST
@@ -206,18 +187,20 @@ public class UserResource extends BaseResource {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
-        checkBaseFunction(BaseFunction.ADMIN);
+        checkBaseFunction(BaseFunction.ADMIN); // 权限检查
 
         UserRequestDao requestDao = new UserRequestDao();
-        UserRequest request = requestDao.getById(requestId);
+        UserRequest request = requestDao.findById(requestId); // 使用 findById 方法查找请求
         if (request == null || !"REGISTER".equals(request.getType())) {
             throw new ClientException("RequestNotFound", "Register request not found");
         }
-        requestDao.delete(requestId); // 直接删除请求
+        requestDao.deleteById(requestId); // 删除请求
+
         return Response.ok(Json.createObjectBuilder()
                 .add("status", "register_rejected")
                 .build()).build();
     }
+
 
 
 

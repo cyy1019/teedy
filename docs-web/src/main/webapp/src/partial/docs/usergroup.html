@@ -51,7 +51,7 @@
     <div ui-view="sub"></div>
 
     <!-- Admin Pending Requests Panel -->
-    <div class="well well-3d" ng-if="userInfo.username === 'admin'">
+    <div class="well well-3d" ng-if="userInfo.username === 'admin' && selectedUser && selectedUser.username === 'admin'">
       <h4>
         <span class="fas fa-user-plus"></span>
         {{ 'usergroup.pending_requests' | translate }}
@@ -67,19 +67,31 @@
         </thead>
         <tbody>
         <tr ng-repeat="request in pendingRequests">
-          <td>{{ request.data | json | parseUsername }}</td>
-          <td>{{ request.data | json | parseEmail }}</td>
+          <td>{{ request.username }}</td>
+          <td>{{ request.email }}</td>
           <td>
             <button class="btn btn-success btn-xs" ng-click="approveRequest(request.id)" style="background: indianred;">
               <span class="fas fa-check"></span> {{ 'usergroup.approve' | translate }}
             </button>
-            <button class="btn btn-danger btn-xs" ng-click="denyRequest(request.id)" style="background: lightskyblue;">
-              <span class="fas fa-times"></span> {{ 'common.reject' | translate }}
+            <button class="btn btn-danger btn-xs" ng-click="rejectRequest(request.id)" style="background: lightskyblue;">
+              <span class="fas fa-times"></span> {{ 'usergroup.reject' | translate }}
             </button>
           </td>
         </tr>
         </tbody>
       </table>
+    </div>
+    
+    <!-- Non-admin user message -->
+    <div class="well well-3d" ng-if="userInfo.username !== 'admin' && pendingRequests && pendingRequests.length > 0">
+      <h4>
+        <span class="fas fa-user-plus"></span>
+        {{ 'usergroup.pending_requests' | translate }}
+      </h4>
+      <div class="alert alert-warning">
+        <span class="fas fa-exclamation-triangle"></span>
+        {{ 'usergroup.admin_required' | translate }}
+      </div>
     </div>
   </div>
 </div>

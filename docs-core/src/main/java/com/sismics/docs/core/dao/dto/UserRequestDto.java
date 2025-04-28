@@ -2,69 +2,37 @@ package com.sismics.docs.core.dao.dto;
 
 import java.util.Date;
 
+/**
+ * User request DTO.
+ *
+ * @author jtremeaux
+ */
 public class UserRequestDto {
 
     private String id;
-    private String userId;
+    private String userName;
     private String type;
-    private String data;
+    private String password;
+    private String email;
     private Date createDate;
 
-    // 可选：附加用户信息（比如用户名或邮箱），需要联表查询时使用
-    private String userName;
-    private String userEmail;
-
-    public UserRequestDto() {
-    }
-
-    public UserRequestDto(String id, String userId, String type, String data, Date createDate) {
+    // Constructor
+    public UserRequestDto(String id, String userName, String type, String password, String email, Date createDate) {
         this.id = id;
-        this.userId = userId;
+        this.userName = userName;
         this.type = type;
-        this.data = data;
+        this.password = password;
+        this.email = email;
         this.createDate = createDate;
     }
 
-    // Getter & Setter
-
+    // Getters and Setters
     public String getId() {
         return id;
     }
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getData() {
-        return data;
-    }
-
-    public void setData(String data) {
-        this.data = data;
-    }
-
-    public Date getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
     }
 
     public String getUserName() {
@@ -75,11 +43,44 @@ public class UserRequestDto {
         this.userName = userName;
     }
 
-    public String getUserEmail() {
-        return userEmail;
+    public String getType() {
+        return type;
     }
 
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    // toString method for better logging
+    @Override
+    public String toString() {
+        return "UserRequestDTO{" +
+                "id='" + id + '\'' +
+                ", userName='" + userName + '\'' +
+                ", type='" + type + '\'' +
+                ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                ", createDate=" + createDate +
+                '}';
     }
 }

@@ -264,7 +264,12 @@
     "default": {
       "title": "Users & Groups",
       "message": "Here you can view informations about users and groups."
-    }
+    },
+    "pending_requests": "Pending Requests",
+    "action": "Action",
+    "approve": "Approve",
+    "reject": "Reject",
+    "admin_required": "You need administrator privileges to process registration requests. Please log in with an admin account."
   },
   "settings": {
     "menu_personal_settings": "Personal settings",

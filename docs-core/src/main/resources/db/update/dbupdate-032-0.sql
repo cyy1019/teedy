@@ -1,8 +1,10 @@
-CREATE TABLE T_USER_REQUEST (
-                                REQ_ID_C        VARCHAR(36) PRIMARY KEY,
-                                REQ_USERNAME_C  VARCHAR(100),
-                                REQ_EMAIL_C     VARCHAR(100),
-                                REQ_REASON_C    TEXT,
-                                REQ_DATE_D      TIMESTAMP,
-                                REQ_STATUS_C    VARCHAR(20) -- pending / accepted / rejected
+create memory table T_USER_REQUEST ( 
+  URQ_ID_C varchar(36) primary key, 
+  URQ_USERNAME varchar(255) not null, 
+  URQ_TYPE_C varchar(255), 
+  URQ_PASSWORD varchar(255) not null, 
+  URQ_EMAIL varchar(255) not null,
+  URQ_CREATEDATE_D datetime,
+  URQ_DELETEDATE_D datetime
 );
+update T_CONFIG set CFG_VALUE_C = '32' where CFG_ID_C = 'DB_VERSION';

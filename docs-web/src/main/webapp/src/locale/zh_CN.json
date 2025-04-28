@@ -238,7 +238,8 @@
     "pending_requests": "待处理请求",
     "action": "操作",
     "approve": "批准",
-    "reject": "拒绝"
+    "reject": "拒绝",
+    "admin_required": "您需要管理员权限才能处理注册申请。请使用管理员账号登录。"
   },
   "settings": {
     "menu_personal_settings": "个人设置",
