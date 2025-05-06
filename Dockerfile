@@ -7,8 +7,8 @@ ENV DEBIAN_FRONTEND noninteractive
 # Configure env
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
-# ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64/
-ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64/
+ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64/
+# ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64/
 ENV JAVA_OPTIONS -Dfile.encoding=UTF-8 -Xmx1g
 ENV JETTY_VERSION 11.0.20
 ENV JETTY_HOME /opt/jetty
