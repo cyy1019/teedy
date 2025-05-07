@@ -3,7 +3,24 @@
 /**
  * File modal view controller.
  */
-angular.module('docs').controller('FileModalView', function ($uibModalInstance, $scope, $state, $stateParams, $sce, Restangular, $transitions) {
+angular.module('docs').controller('FileModalView', function ($uibModalInstance, $scope, $state, $stateParams, $sce, Restangular, $transitions, $dialog) {
+  $scope.file = undefined;
+  $scope.translationResult = null;
+  $scope.translationError = null;
+  $scope.isTranslating = false;
+
+  // Supported languages for translation
+  $scope.supportedLanguages = [
+    { code: 'zh', name: '中文' },
+    { code: 'en', name: 'English' },
+    { code: 'ja', name: '日本語' },
+    { code: 'ko', name: '한국어' },
+    { code: 'fr', name: 'Français' },
+    { code: 'de', name: 'Deutsch' },
+    { code: 'es', name: 'Español' },
+    { code: 'ru', name: 'Русский' }
+  ];
+
   var setFile = function (files) {
     // Search current file
     _.each(files, function (value) {
@@ -26,6 +43,33 @@ angular.module('docs').controller('FileModalView', function ($uibModalInstance, 
       });
     }
   });
+
+  /**
+   * Translate file content.
+   */
+  $scope.translateFile = function (targetLanguage) {
+    if (!$stateParams.fileId) {
+      $scope.translationError = $translate.instant('translation.no_file_selected');
+      return;
+    }
+
+    $scope.isTranslating = true;
+    $scope.translationError = null;
+    $scope.translationResult = null;
+
+    Restangular.one('file', $stateParams.fileId).customPOST({
+      targetLanguage: targetLanguage
+    }, 'translate').then(function (response) {
+      $scope.translationResult = response.translatedText;
+    }).catch(function (error) {
+      var title = $translate.instant('translation.error_title');
+      var msg = (error.data && error.data.message) || $translate.instant('translation.error_message');
+      var btns = [{ result: 'ok', label: $translate.instant('ok'), cssClass: 'btn-primary' }];
+      $dialog.messageBox(title, msg, btns);
+    }).finally(function () {
+      $scope.isTranslating = false;
+    });
+  };
 
   /**
    * Return the next file.

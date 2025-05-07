@@ -15,6 +15,7 @@ import com.sismics.docs.core.event.FileUpdatedAsyncEvent;
 import com.sismics.docs.core.model.context.AppContext;
 import com.sismics.docs.core.model.jpa.File;
 import com.sismics.docs.core.model.jpa.User;
+import com.sismics.docs.core.service.TranslationService;
 import com.sismics.docs.core.util.DirectoryUtil;
 import com.sismics.docs.core.util.EncryptionUtil;
 import com.sismics.docs.core.util.FileUtil;
@@ -29,6 +30,8 @@ import com.sismics.util.context.ThreadLocalContext;
 import com.sismics.util.mime.MimeType;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
@@ -59,6 +62,15 @@ import java.util.zip.ZipOutputStream;
  */
 @Path("/file")
 public class FileResource extends BaseResource {
+    private TranslationService translationService = new TranslationService();
+    private TranslationService getTranslationService() {
+        if (translationService == null) {
+            translationService = new TranslationService();
+        }
+        return translationService;
+    }
+    private static final Logger log = LoggerFactory.getLogger(FileResource.class);
+
     /**
      * Add a file (with or without a document).
      *
@@ -807,6 +819,71 @@ public class FileResource extends BaseResource {
             if (!aclDao.checkPermission(file.getDocumentId(), PermType.READ, getTargetIdList(shareId))) {
                 throw new ForbiddenClientException();
             }
+        }
+    }
+
+    /**
+     * Translate file content to target language.
+     *
+     * @api {post} /file/:id/translate Translate file content
+     * @apiName PostFileTranslate
+     * @apiGroup File
+     * @apiParam {String} id File ID
+     * @apiParam {String} targetLanguage Target language code
+     * @apiSuccess {String} translatedText Translated text
+     * @apiError (client) ForbiddenError Access denied
+     * @apiError (client) ValidationError Validation error
+     * @apiError (client) NotFound File not found
+     * @apiError (server) TranslationError Error translating text
+     * @apiPermission user
+     * @apiVersion 1.5.0
+     *
+     * @param id File ID
+     * @param targetLanguage Target language code
+     * @return Response
+     */
+    @POST
+    @Path("{id: [a-z0-9\\-]+}/translate")
+    public Response translate(
+            @PathParam("id") String id,
+            @FormParam("targetLanguage") String targetLanguage) {
+        if (!authenticate()) {
+            throw new ForbiddenClientException();
+        }
+
+        // Validate parameters
+        ValidationUtil.validateRequired(targetLanguage, "targetLanguage");
+
+        // Get the file
+        File file = findFile(id, null);
+
+        // Get file content
+        String content = file.getContent();
+        if (content == null) {
+            throw new ClientException("NoContent", "File has no content to translate");
+        }
+
+        try {
+            // Translate text
+            String translatedText = translationService.translateText(content, targetLanguage);
+            
+            // Build response
+            JsonObjectBuilder response = Json.createObjectBuilder()
+                .add("translatedText", translatedText);
+            
+            return Response.ok()
+                .entity(response.build())
+                .build();
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid translation request", e);
+            return Response.status(Response.Status.BAD_REQUEST)
+                .entity(Json.createObjectBuilder()
+                    .add("message", e.getMessage())
+                    .build())
+                .build();
+        } catch (Exception e) {
+            log.error("Error translating text", e);
+            throw new ServerException("TranslationError", "Error translating text", e);
         }
     }
 }

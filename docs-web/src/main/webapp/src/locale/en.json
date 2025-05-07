@@ -203,7 +203,10 @@
     "view": {
       "previous": "Previous",
       "next": "Next",
-      "not_found": "File not found"
+      "not_found": "File not found",
+      "translate": "Translate this file",
+      "translation_result": "Translated file",
+      "translating": "Translating..."
     },
     "edit": {
       "title": "Edit file",

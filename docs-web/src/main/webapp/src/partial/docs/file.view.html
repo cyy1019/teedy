@@ -22,6 +22,21 @@
   </div>
   
   <div class="btn-group pull-right">
+    <!-- Translation button and dropdown -->
+    <div class="btn-group" uib-dropdown>
+      <button type="button" class="btn btn-default" uib-dropdown-toggle>
+        <span class="fas fa-language"></span>
+        {{ 'file.view.translate' | translate }}
+      </button>
+      <ul class="dropdown-menu" uib-dropdown-menu>
+        <li ng-repeat="lang in supportedLanguages">
+          <a href ng-click="translateFile(lang.code)">
+            {{ lang.name }}
+          </a>
+        </li>
+      </ul>
+    </div>
+    
     <button type="button" class="btn btn-default" uib-tooltip="Print this file" tooltip-append-to-body="true" ng-click="printFile()">
       <span class="fas fa-print"></span>
     </button>
@@ -34,7 +49,64 @@
   </div>
 </div>
 
+<!-- File content display -->
+<div class="file-content-container">
+  <div class="alert alert-danger" ng-if="translationError">
+    {{ translationError }}
+  </div>
+  
+  <div class="file-content" ng-if="!translationResult">
+    <pre>{{ fileContent }}</pre>
+  </div>
+  
+  <div class="translation-result" ng-if="translationResult">
+    <h4>{{ 'file.view.translation_result' | translate }}:</h4>
+    <pre>{{ translationResult }}</pre>
+  </div>
+  
+  <div class="loading-spinner" ng-if="isTranslating">
+    <span class="fas fa-spinner fa-spin"></span> {{ 'file.view.translating' | translate }}
+  </div>
+</div>
+
+<style>
+.file-content-container {
+  margin: 20px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.file-content, .translation-result {
+  margin-top: 20px;
+}
+
+.file-content pre, .translation-result pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.loading-spinner {
+  text-align: center;
+  margin: 20px 0;
+  color: #666;
+}
+</style>
+
 <div class="text-center" style="position: relative;" ng-if="$stateParams.fileId">
+  <!-- <div class="translation-result" ng-if="translationResult || translationError">
+    <div class="alert alert-danger" ng-if="translationError">
+      {{ translationError }}
+    </div>
+    <div class="alert alert-success" ng-if="translationResult">
+      <strong>{{ 'file.view.translation_result' | translate }}:</strong>
+      <p>{{ translationResult }}</p>
+    </div>
+  </div> -->
+
   <!-- Standard preview -->
   <img ng-src="../api/file/{{ $stateParams.fileId }}/data?size=web"
        ng-init="error = false"
