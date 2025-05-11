@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * Service for translation
  * Translation service using Tencent Cloud API.
  */
 public class TranslationService {
