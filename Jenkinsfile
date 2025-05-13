@@ -26,21 +26,36 @@ DOCKER_IMAGE = 'cyy1019/teedy'
  }
  }
  }
- 
+
  stage('Upload image') {
- steps {
- script {
- docker.withRegistry('https://registry.hub.docker.com',
-'cyy-teedy') {
+  environment {
+    DOCKER_HOST = 'npipe:////./pipe/docker_engine'
+  }
+  steps {
+    script {
+      docker.withRegistry('https://registry.hub.docker.com', 'cyy-teedy') {
+        docker.image("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}").push()
+        docker.image("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}").push('latest')
+      }
+    }
+  }
+}
+
+
+//  stage('Upload image') {
+//  steps {
+//  script {
+//  docker.withRegistry('https://registry.hub.docker.com',
+// 'cyy-teedy') {
  
-docker.image("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}").push()
+// docker.image("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}").push()
  
  
-docker.image("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}").push('latest')
- }
- }
- }
- }
+// docker.image("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}").push('latest')
+//  }
+//  }
+//  }
+//  }
  
  // Running Docker container
  stage('Run containers') {
