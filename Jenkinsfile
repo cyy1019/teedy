@@ -2,7 +2,7 @@ pipeline {
  agent any
  
  environment {
- DOCKER_HUB_CREDENTIALS = credentials('dockerhub_credentials') 
+ DOCKER_HUB_CREDENTIALS = credentials('cyy-teedy') 
 DOCKER_IMAGE = 'cyy1019/teedy'
  DOCKER_TAG = "${env.BUILD_NUMBER}"
  }
@@ -11,7 +11,7 @@ DOCKER_IMAGE = 'cyy1019/teedy'
  stage('Build') {
  steps {
  checkout scmGit(
- branches: [[name: '*/master']], 
+ branches: [[name: '*/lab12']], 
  extensions: [], 
  userRemoteConfigs: [[url: 'https://github.com/cyy1019/teedy.git']]
  )
