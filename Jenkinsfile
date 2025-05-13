@@ -31,7 +31,7 @@ DOCKER_IMAGE = 'cyy1019/teedy'
  steps {
  script {
  docker.withRegistry('https://registry.hub.docker.com',
-'DOCKER_HUB_CREDENTIALS') {
+'cyy-teedy') {
  
 docker.image("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}").push()
  
