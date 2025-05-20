@@ -4,33 +4,37 @@ pipeline {
         DEPLOYMENT_NAME = "hello-node"
         CONTAINER_NAME = "hello-node-6f98659985-5d6n8"
         IMAGE_NAME = "cyy1019/sismics/docs:v1.11"
-        MINIKUBE = "/d/course/SE/minikube/minikube.exe"
+        MINIKUBE_PATH = "D:\\course\\SE\\minikube\\minikube.exe"
     }
     stages {
         stage('Start Minikube') {
             steps {
-                sh '''
-                if ! "$MINIKUBE" status | grep -q "Running"; then
-                  echo "Starting Minikube..."
-                  "$MINIKUBE" start
-                else
-                  echo "Minikube already running."
-                fi
+                bat '''
+                if not exist "%MINIKUBE_PATH%" (
+                    echo Minikube not found at %MINIKUBE_PATH%
+                    exit /b 1
+                )
+
+                echo Checking Minikube status...
+                "%MINIKUBE_PATH%" status
+
+                echo Starting Minikube...
+                "%MINIKUBE_PATH%" start
                 '''
             }
         }
         stage('Set Image') {
             steps {
-                sh '''
-                echo "Setting image for deployment..."
-                kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=${IMAGE_NAME}
+                bat '''
+                echo Setting image for deployment...
+                kubectl set image deployment/%DEPLOYMENT_NAME% %CONTAINER_NAME%=%IMAGE_NAME%
                 '''
             }
         }
         stage('Verify') {
             steps {
-                sh '''
-                kubectl rollout status deployment/${DEPLOYMENT_NAME}
+                bat '''
+                kubectl rollout status deployment/%DEPLOYMENT_NAME%
                 kubectl get pods
                 '''
             }
