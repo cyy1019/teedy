@@ -4,7 +4,7 @@ pipeline {
         DEPLOYMENT_NAME = "hello-node"
         CONTAINER_NAME = "docs"
 //         IMAGE_NAME = "cyy1019/sismics/docs:v1.11"
-        IMAGE_NAME = "cyy1019/teedy:latest"
+        IMAGE_NAME = "sismics/docs:v1.11"
         MINIKUBE_PATH = "D:\\course\\SE\\minikube\\minikube.exe"
     }
     stages {
