@@ -2,8 +2,9 @@ pipeline {
     agent any
     environment {
         DEPLOYMENT_NAME = "hello-node"
-        CONTAINER_NAME = "docs"  // <-- 修正这里
-        IMAGE_NAME = "cyy1019/sismics/docs:v1.11"
+        CONTAINER_NAME = "docs"
+//         IMAGE_NAME = "cyy1019/sismics/docs:v1.11"
+        IMAGE_NAME = "cyy1019/teedy:latest"
         MINIKUBE_PATH = "D:\\course\\SE\\minikube\\minikube.exe"
     }
     stages {
